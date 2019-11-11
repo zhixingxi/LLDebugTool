@@ -393,11 +393,40 @@ NSString * const LLAppInfoHelperTotalDataTrafficKey = @"LLAppInfoHelperTotalData
 #pragma mark - Memory
 - (void)memoryTimerAction:(NSTimer *)timer {
     struct mstats stat = mstats();
-    _usedMemory = stat.bytes_used;
-    _freeMemory = stat.bytes_free;
+    _usedMemory = [self mm_getMemoryUsage];
+    _freeMemory = [self mm_getMemoryCanUse];
     _totalMemory = stat.bytes_total;
     _cpu = [self getCpuUsage];
     [self postAppInfoHelperDidUpdateAppInfosNotification];
+}
+
+- (int64_t)mm_getMemoryCanUse
+{
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t size = sizeof(info);
+    kern_return_t kerr = task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &size);
+    if (kerr == KERN_SUCCESS)
+    {
+//        float used_bytes = info.resident_size;
+        float total_bytes = [NSProcessInfo processInfo].physicalMemory;
+        //NSLog(@"Used: %f MB out of %f MB (%f%%)", used_bytes / 1024.0f / 1024.0f, total_bytes / 1024.0f / 1024.0f, used_bytes * 100.0f / total_bytes);
+        return total_bytes * 0.45;
+    }
+    return 1;
+}
+
+- (int64_t)mm_getMemoryUsage {
+    int64_t memoryUsageInByte = 0;
+    task_vm_info_data_t vmInfo;
+    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+    kern_return_t kernelReturn = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t) &vmInfo, &count);
+    if(kernelReturn == KERN_SUCCESS) {
+        memoryUsageInByte = (int64_t) vmInfo.phys_footprint;
+//        NSLog(@"Memory in use (in bytes): %lld", memoryUsageInByte);
+    } else {
+//        NSLog(@"Error with task_info(): %s", mach_error_string(kernelReturn));
+    }
+    return memoryUsageInByte;
 }
 
 - (void)postAppInfoHelperDidUpdateAppInfosNotification {
