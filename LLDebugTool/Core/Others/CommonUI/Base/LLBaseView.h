@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Background color changed notification, must call super.
 - (void)backgroundColorChanged;
 
+- (void)appInfoChanged:(NSNotification *)notifi;
+
 @end
 
 NS_ASSUME_NONNULL_END

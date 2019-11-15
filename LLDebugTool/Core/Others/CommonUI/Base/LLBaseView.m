@@ -24,6 +24,7 @@
 #import "LLBaseView.h"
 
 #import "LLThemeManager.h"
+#import "LLAppInfoHelper.h"
 
 @implementation LLBaseView
 
@@ -55,6 +56,10 @@
     
 }
 
+- (void)appInfoChanged:(NSNotification *)notifi {
+    
+}
+
 - (void)backgroundColorChanged {
     
 }
@@ -63,6 +68,7 @@
 - (void)addObservers {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveThemeManagerUpdatePrimaryColorNotificaion:) name:kThemeManagerUpdatePrimaryColorNotificaionName object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveThemeManagerUpdateBackgroundColorNotificaion:) name:kThemeManagerUpdateBackgroundColorNotificaionName object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didReceiveLLAppHelperDidUpdateAppInfosNotification:) name:LLAppInfoHelperDidUpdateAppInfosNotificationName object:nil];
 }
 
 #pragma mark - kThemeManagerUpdatePrimaryColorNotificaionName
@@ -73,6 +79,10 @@
 #pragma mark - kThemeManagerUpdateBackgroundColorNotificaionName
 - (void)didReceiveThemeManagerUpdateBackgroundColorNotificaion:(NSNotification *)notification {
     [self backgroundColorChanged];
+}
+
+- (void)didReceiveLLAppHelperDidUpdateAppInfosNotification:(NSNotification *)notifi {
+    [self appInfoChanged:notifi];
 }
 
 
