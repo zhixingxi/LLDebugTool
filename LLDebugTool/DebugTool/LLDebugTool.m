@@ -94,7 +94,7 @@ static LLDebugTool *_instance = nil;
             [self showWindow];
         }
         
-//        [self registerNotifications];
+        [self registerNotifications];
     }
 }
 
