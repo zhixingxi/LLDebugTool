@@ -10,7 +10,6 @@
 
 #import <WebKit/WebKit.h>
 
-#import "LLHtmlUIWebViewController.h"
 #import "LLHtmlWkWebViewController.h"
 #import "LLTitleCellCategoryModel.h"
 #import "LLHtmlViewController.h"
@@ -65,10 +64,7 @@
     }
     Class cls = NSClassFromString(self.webViewClass);
     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (cls != [UIWebView class] && cls != [WKWebView class]) {
-#pragma clang diagnostic pop
+    if (cls != [WKWebView class]) {
         if ([LLConfig shared].htmlViewControllerProvider != nil) {
             UIViewController *customViewController = [LLConfig shared].htmlViewControllerProvider(urlString);
             if (customViewController && cls == [customViewController class]) {
@@ -86,14 +82,7 @@
     [LLSettingManager shared].lastWebViewUrl = urlString;
     
     LLHtmlViewController *vc = nil;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (cls == [UIWebView class]) {
-#pragma clang diagnostic pop
-        vc = [[LLHtmlUIWebViewController alloc] init];
-    } else {
-        vc = [[LLHtmlWkWebViewController alloc] init];
-    }
+    vc = [[LLHtmlWkWebViewController alloc] init];
     vc.webViewClass = self.webViewClass;
     vc.urlString = [self currentUrlString];
     [self.navigationController pushViewController:vc animated:YES];
@@ -140,10 +129,6 @@
 - (void)showWebViewClassAlert {
     __block NSMutableArray *actions = [[NSMutableArray alloc] init];
     [actions addObject:NSStringFromClass([WKWebView class])];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [actions addObject:NSStringFromClass([UIWebView class])];
-#pragma clang diagnostic pop
     if ([LLConfig shared].htmlViewControllerProvider != nil) {
         UIViewController *vc = [LLConfig shared].htmlViewControllerProvider(nil);
         if (vc) {
