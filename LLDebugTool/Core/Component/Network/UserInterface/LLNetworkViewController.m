@@ -26,12 +26,15 @@
 #import "LLNetworkDetailViewController.h"
 #import "LLNetworkFilterView.h"
 #import "LLNetworkFilterView.h"
+#import "LLNetworkMockManager.h"
 #import "LLImageNameConfig.h"
 #import "LLStorageManager.h"
 #import "LLNetworkModel.h"
 #import "LLNetworkCell.h"
 #import "LLToastUtils.h"
 #import "LLSearchBar.h"
+#import "LLFactory.h"
+#import "LLThemeManager.h"
 #import "LLMacros.h"
 #import "LLConfig.h"
 #import "LLConst.h"
@@ -45,6 +48,7 @@ static NSString *const kNetworkCellID = @"NetworkCellID";
 @interface LLNetworkViewController ()
 
 @property (nonatomic, strong) LLNetworkFilterView *filterView;
+@property (nonatomic, strong) UIButton *closeAllMocksButton;
 
 // Data
 @property (nonatomic, strong) NSArray *currentHost;
@@ -88,7 +92,9 @@ static NSString *const kNetworkCellID = @"NetworkCellID";
     };
     [self.filterView configWithData:self.oriDataArray];
     [self.headerView addSubview:self.filterView];
-    self.headerView.frame = CGRectMake(self.headerView.LL_x, self.headerView.LL_y, self.headerView.LL_width, self.filterView.LL_bottom);
+    self.closeAllMocksButton.frame = CGRectMake(kLLGeneralMargin, self.filterView.LL_bottom + kLLGeneralMargin, LL_SCREEN_WIDTH - kLLGeneralMargin * 2, 35);
+    [self.headerView addSubview:self.closeAllMocksButton];
+    self.headerView.frame = CGRectMake(self.headerView.LL_x, self.headerView.LL_y, self.headerView.LL_width, self.closeAllMocksButton.LL_bottom + kLLGeneralMargin);
     
     [self loadData];
 }
@@ -101,6 +107,20 @@ static NSString *const kNetworkCellID = @"NetworkCellID";
 - (void)rightItemClick:(UIButton *)sender {
     [super rightItemClick:sender];
     [self.filterView cancelFiltering];
+}
+
+- (void)closeAllMocksButtonClick:(UIButton *)sender {
+    __weak typeof(self) weakSelf = self;
+    [self LL_showAlertControllerWithMessage:@"Close all mock switches?" handler:^(NSInteger action) {
+        if (action == 1) {
+            [[LLToastUtils shared] loadingMessage:@"Closing"];
+            [[LLNetworkMockManager shared] closeAllMocksWithComplete:^(BOOL result) {
+                [[LLToastUtils shared] hide];
+                [[LLToastUtils shared] toastMessage:result ? @"All mocks closed" : @"Close all mocks fail"];
+                [weakSelf.tableView reloadData];
+            }];
+        }
+    }];
 }
 
 - (BOOL)isSearching {
@@ -255,6 +275,21 @@ static NSString *const kNetworkCellID = @"NetworkCellID";
         [self.searchDataArray removeObjectsInArray:tempArray];
         [self.tableView reloadData];
     }
+}
+
+#pragma mark - Getters and setters
+- (UIButton *)closeAllMocksButton {
+    if (!_closeAllMocksButton) {
+        _closeAllMocksButton = [LLFactory getButton:nil frame:CGRectZero target:self action:@selector(closeAllMocksButtonClick:)];
+        [_closeAllMocksButton setTitle:@"Close All Mocks" forState:UIControlStateNormal];
+        [_closeAllMocksButton setTitleColor:[LLThemeManager shared].primaryColor forState:UIControlStateNormal];
+        _closeAllMocksButton.titleLabel.font = [UIFont boldSystemFontOfSize:14];
+        _closeAllMocksButton.layer.borderWidth = 1;
+        _closeAllMocksButton.layer.borderColor = [LLThemeManager shared].primaryColor.CGColor;
+        _closeAllMocksButton.layer.cornerRadius = 4;
+        _closeAllMocksButton.layer.masksToBounds = YES;
+    }
+    return _closeAllMocksButton;
 }
 
 @end

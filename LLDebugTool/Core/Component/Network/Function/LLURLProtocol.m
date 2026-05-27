@@ -26,6 +26,8 @@
 #import "LLStorageManager.h"
 #import "LLFormatterTool.h"
 #import "LLAppInfoHelper.h"
+#import "LLNetworkMockManager.h"
+#import "LLNetworkMockModel.h"
 #import "LLNetworkModel.h"
 #import "LLConfig.h"
 #import "LLTool.h"
@@ -44,6 +46,8 @@ static NSString *const HTTPHandledIdentifier = @"HttpHandleIdentifier";
 @property (nonatomic, strong) NSMutableData        *data;
 @property (nonatomic, strong) NSDate               *startDate;
 @property (nonatomic, strong) NSError              *error;
+@property (nonatomic, assign) BOOL mocked;
+@property (nonatomic, assign) BOOL saved;
 
 @end
 
@@ -92,15 +96,57 @@ static NSString *const HTTPHandledIdentifier = @"HttpHandleIdentifier";
 - (void)startLoading {
     self.startDate                                        = [NSDate date];
     self.data                                             = [NSMutableData data];
+    __weak typeof(self) weakSelf = self;
+    [[LLNetworkMockManager shared] mockModelForRequest:self.request complete:^(LLNetworkMockModel * _Nullable model) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        if (model.isEnabled) {
+            [strongSelf loadMockModel:model];
+        } else {
+            [strongSelf loadOriginRequest];
+        }
+    }];
+}
+
+- (void)loadOriginRequest {
     NSURLSessionConfiguration *configuration              = [NSURLSessionConfiguration defaultSessionConfiguration];
     self.session                                          = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
     self.dataTask                                         = [self.session dataTaskWithRequest:self.request];
     [self.dataTask resume];
 }
 
+- (void)loadMockModel:(LLNetworkMockModel *)mockModel {
+    self.mocked = YES;
+    NSData *bodyData = mockModel.bodyData ?: [NSData data];
+    NSString *mimeType = mockModel.mimeType.length ? mockModel.mimeType : @"application/json";
+    NSDictionary *headers = @{@"Content-Type" : mimeType};
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:self.request.URL statusCode:[mockModel statusCodeValue] HTTPVersion:@"HTTP/1.1" headerFields:headers];
+    self.response = response;
+    self.data = [bodyData mutableCopy];
+    [self.client URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+    if (bodyData.length) {
+        [self.client URLProtocol:self didLoadData:bodyData];
+    }
+    [self.client URLProtocolDidFinishLoading:self];
+    [self saveMockNetworkModelWithMockModel:mockModel];
+}
+
 - (void)stopLoading {
+    if (self.mocked) {
+        return;
+    }
     [self.dataTask cancel];
     self.dataTask           = nil;
+    [self saveCurrentNetworkModel];
+}
+
+- (void)saveCurrentNetworkModel {
+    if (self.saved) {
+        return;
+    }
+    self.saved = YES;
     LLNetworkModel *model = [[LLNetworkModel alloc] init];
     model.startDate = [LLFormatterTool stringFromDate:self.startDate style:FormatterToolDateStyle1];
     // Request
@@ -136,6 +182,23 @@ static NSString *const HTTPHandledIdentifier = @"HttpHandleIdentifier";
     model.responseHeaderFields = [httpResponse.allHeaderFields mutableCopy];
     model.totalDuration = [NSString stringWithFormat:@"%fs",[[NSDate date] timeIntervalSinceDate:self.startDate]];
     model.error = self.error;
+    [[LLStorageManager shared] saveModel:model complete:nil];
+    [[LLNetworkMockManager shared] saveMockDraftWithNetworkModel:model];
+    [[LLAppInfoHelper shared] updateRequestDataTraffic:model.requestDataTrafficValue responseDataTraffic:model.responseDataTrafficValue];
+}
+
+- (void)saveMockNetworkModelWithMockModel:(LLNetworkMockModel *)mockModel {
+    LLNetworkModel *model = [[LLNetworkModel alloc] init];
+    model.startDate = [LLFormatterTool stringFromDate:self.startDate style:FormatterToolDateStyle1];
+    model.url = self.request.URL;
+    model.method = self.request.HTTPMethod;
+    model.headerFields = [self.request.allHTTPHeaderFields mutableCopy];
+    model.stateLine = [NSString stringWithFormat:@"HTTP/1.1 %ld", (long)[mockModel statusCodeValue]];
+    model.mimeType = mockModel.mimeType.length ? mockModel.mimeType : @"application/json";
+    model.statusCode = [NSString stringWithFormat:@"%ld", (long)[mockModel statusCodeValue]];
+    model.responseData = mockModel.bodyData;
+    model.responseHeaderFields = @{@"Content-Type" : model.mimeType};
+    model.totalDuration = [NSString stringWithFormat:@"%fs",[[NSDate date] timeIntervalSinceDate:self.startDate]];
     [[LLStorageManager shared] saveModel:model complete:nil];
     [[LLAppInfoHelper shared] updateRequestDataTraffic:model.requestDataTrafficValue responseDataTraffic:model.responseDataTrafficValue];
 }
@@ -176,6 +239,7 @@ static NSString *const HTTPHandledIdentifier = @"HttpHandleIdentifier";
     self.dataTask = nil;
     [self.session finishTasksAndInvalidate];
     self.session = nil;
+    [self saveCurrentNetworkModel];
 }
 
 #pragma mark - NSURLSessionDataDelegate

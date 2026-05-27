@@ -137,6 +137,9 @@
 		C49856D922ED90DD00E9FBE2 /* LLURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856D522ED90DD00E9FBE2 /* LLURLProtocol.m */; };
 		C49856DA22ED90DD00E9FBE2 /* LLNetworkModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856D722ED90DD00E9FBE2 /* LLNetworkModel.m */; };
 		C49856DB22ED90DD00E9FBE2 /* LLNetworkHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856D822ED90DD00E9FBE2 /* LLNetworkHelper.m */; };
+		C0DE00000000000000000007 /* LLNetworkMockModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000002 /* LLNetworkMockModel.m */; };
+		C0DE00000000000000000008 /* LLNetworkMockManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000004 /* LLNetworkMockManager.m */; };
+		C0DE00000000000000000009 /* LLNetworkMockEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000006 /* LLNetworkMockEditViewController.m */; };
 		C49856E122ED90F300E9FBE2 /* LLSandboxHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856DF22ED90F200E9FBE2 /* LLSandboxHelper.m */; };
 		C49856E222ED90F300E9FBE2 /* LLSandboxModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856E022ED90F200E9FBE2 /* LLSandboxModel.m */; };
 		C49856E622EDAC9400E9FBE2 /* LLAppInfoComponent.m in Sources */ = {isa = PBXBuildFile; fileRef = C49856E522EDAC9400E9FBE2 /* LLAppInfoComponent.m */; };
@@ -491,10 +494,16 @@
 		C49856CF22ED90C800E9FBE2 /* LLLogHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLLogHelper.m; sourceTree = "<group>"; };
 		C49856D322ED90DD00E9FBE2 /* LLNetworkHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLNetworkHelper.h; sourceTree = "<group>"; };
 		C49856D422ED90DD00E9FBE2 /* LLNetworkModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLNetworkModel.h; sourceTree = "<group>"; };
+		C0DE00000000000000000001 /* LLNetworkMockModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLNetworkMockModel.h; sourceTree = "<group>"; };
+		C0DE00000000000000000002 /* LLNetworkMockModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLNetworkMockModel.m; sourceTree = "<group>"; };
+		C0DE00000000000000000003 /* LLNetworkMockManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLNetworkMockManager.h; sourceTree = "<group>"; };
+		C0DE00000000000000000004 /* LLNetworkMockManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLNetworkMockManager.m; sourceTree = "<group>"; };
 		C49856D522ED90DD00E9FBE2 /* LLURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLURLProtocol.m; sourceTree = "<group>"; };
 		C49856D622ED90DD00E9FBE2 /* LLURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLURLProtocol.h; sourceTree = "<group>"; };
 		C49856D722ED90DD00E9FBE2 /* LLNetworkModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLNetworkModel.m; sourceTree = "<group>"; };
 		C49856D822ED90DD00E9FBE2 /* LLNetworkHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLNetworkHelper.m; sourceTree = "<group>"; };
+		C0DE00000000000000000005 /* LLNetworkMockEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLNetworkMockEditViewController.h; sourceTree = "<group>"; };
+		C0DE00000000000000000006 /* LLNetworkMockEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLNetworkMockEditViewController.m; sourceTree = "<group>"; };
 		C49856DD22ED90F200E9FBE2 /* LLSandboxHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLSandboxHelper.h; sourceTree = "<group>"; };
 		C49856DE22ED90F200E9FBE2 /* LLSandboxModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLSandboxModel.h; sourceTree = "<group>"; };
 		C49856DF22ED90F200E9FBE2 /* LLSandboxHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LLSandboxHelper.m; sourceTree = "<group>"; };
@@ -1294,6 +1303,8 @@
 				C498564422ED8D4700E9FBE2 /* LLNetworkViewController.m */,
 				C498563E22ED8D4700E9FBE2 /* LLNetworkDetailViewController.h */,
 				C498564622ED8D4700E9FBE2 /* LLNetworkDetailViewController.m */,
+				C0DE00000000000000000005 /* LLNetworkMockEditViewController.h */,
+				C0DE00000000000000000006 /* LLNetworkMockEditViewController.m */,
 				C498570222EDB37200E9FBE2 /* LLNetworkWindow.h */,
 				C498570322EDB37200E9FBE2 /* LLNetworkWindow.m */,
 			);
@@ -1460,6 +1471,10 @@
 				C49856D822ED90DD00E9FBE2 /* LLNetworkHelper.m */,
 				C49856D422ED90DD00E9FBE2 /* LLNetworkModel.h */,
 				C49856D722ED90DD00E9FBE2 /* LLNetworkModel.m */,
+				C0DE00000000000000000001 /* LLNetworkMockModel.h */,
+				C0DE00000000000000000002 /* LLNetworkMockModel.m */,
+				C0DE00000000000000000003 /* LLNetworkMockManager.h */,
+				C0DE00000000000000000004 /* LLNetworkMockManager.m */,
 				36743D402313879700002A92 /* LLReachability.h */,
 				36743D3F2313879700002A92 /* LLReachability.m */,
 				C49856D622ED90DD00E9FBE2 /* LLURLProtocol.h */,
@@ -2212,6 +2227,9 @@
 				3629E3922136830A00226C79 /* BaseTestViewController.m in Sources */,
 				C49856D922ED90DD00E9FBE2 /* LLURLProtocol.m in Sources */,
 				C498569322ED8D4800E9FBE2 /* LLNetworkViewController.m in Sources */,
+				C0DE00000000000000000007 /* LLNetworkMockModel.m in Sources */,
+				C0DE00000000000000000008 /* LLNetworkMockManager.m in Sources */,
+				C0DE00000000000000000009 /* LLNetworkMockEditViewController.m in Sources */,
 				363158972356C37A003DEF8C /* NSInputStream+LL_Utils.m in Sources */,
 				364EF648232204630067C7D7 /* LLHSBPreviewView.m in Sources */,
 				36CDFBCE2350639E002A913F /* LLHtmlViewController.m in Sources */,

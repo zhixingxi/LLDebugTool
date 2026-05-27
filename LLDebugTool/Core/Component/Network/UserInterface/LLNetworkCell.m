@@ -23,6 +23,8 @@
 
 #import "LLNetworkCell.h"
 
+#import "LLNetworkMockManager.h"
+#import "LLNetworkMockModel.h"
 #import "LLNetworkModel.h"
 #import "LLFactory.h"
 #import "LLConfig.h"
@@ -35,6 +37,7 @@
 @property (nonatomic, strong) UILabel *paramLabel;
 
 @property (nonatomic, strong) UILabel *dateLabel;
+@property (nonatomic, strong) UILabel *mockLabel;
 
 @property (strong, nonatomic) LLNetworkModel *model;
 
@@ -43,12 +46,17 @@
 @implementation LLNetworkCell
 
 - (void)confirmWithModel:(LLNetworkModel *)model {
-    if (_model != model) {
-        _model = model;
-        self.hostLabel.text = _model.url.host;
-        self.paramLabel.text = _model.url.path;
-        self.dateLabel.text = [_model.startDate substringFromIndex:11];
-    }
+    _model = model;
+    self.hostLabel.text = _model.url.host;
+    self.paramLabel.text = _model.url.path;
+    self.dateLabel.text = [_model.startDate substringFromIndex:11];
+    self.mockLabel.text = @"";
+    __weak typeof(self) weakSelf = self;
+    [[LLNetworkMockManager shared] mockModelForNetworkModel:_model complete:^(LLNetworkMockModel * _Nullable mockModel) {
+        if (weakSelf.model == model) {
+            weakSelf.mockLabel.text = mockModel.isEnabled ? @"Mock ON" : @"";
+        }
+    }];
 }
 
 #pragma mark - Over write
@@ -60,10 +68,12 @@
     [self.contentView addSubview:self.hostLabel];
     [self.contentView addSubview:self.dateLabel];
     [self.contentView addSubview:self.paramLabel];
+    [self.contentView addSubview:self.mockLabel];
     
     [self addHostLabelConstraints];
     [self addDateLabelConstraints];
     [self addParamLabelConstraints];
+    [self addMockLabelConstraints];
 }
 
 - (void)addHostLabelConstraints {
@@ -80,6 +90,14 @@
     NSLayoutConstraint *width = [NSLayoutConstraint constraintWithItem:self.dateLabel attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:65];
     self.dateLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self.dateLabel.superview addConstraints:@[centerY, right, width]];
+}
+
+- (void)addMockLabelConstraints {
+    NSLayoutConstraint *centerY = [NSLayoutConstraint constraintWithItem:self.mockLabel attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self.dateLabel attribute:NSLayoutAttributeCenterY multiplier:1 constant:18];
+    NSLayoutConstraint *right = [NSLayoutConstraint constraintWithItem:self.mockLabel attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.dateLabel attribute:NSLayoutAttributeTrailing multiplier:1 constant:0];
+    NSLayoutConstraint *width = [NSLayoutConstraint constraintWithItem:self.mockLabel attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:65];
+    self.mockLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.mockLabel.superview addConstraints:@[centerY, right, width]];
 }
 
 - (void)addParamLabelConstraints {
@@ -120,6 +138,16 @@
         _paramLabel.lineBreakMode = NSLineBreakByCharWrapping;
     }
     return _paramLabel;
+}
+
+- (UILabel *)mockLabel {
+    if (!_mockLabel) {
+        _mockLabel = [LLFactory getLabel];
+        _mockLabel.font = [UIFont boldSystemFontOfSize:11];
+        _mockLabel.textAlignment = NSTextAlignmentRight;
+        _mockLabel.textColor = [UIColor redColor];
+    }
+    return _mockLabel;
 }
 
 @end

@@ -33,6 +33,7 @@
 #endif
 
 #import "LLNetworkModel.h"
+#import "LLNetworkMockModel.h"
 #import "LLCrashModel.h"
 #import "LLLogModel.h"
 #import "LLConfig.h"
@@ -369,8 +370,9 @@ static NSString *const kDatabaseVersion = @"1";
     BOOL ret1 = [self registerClass:[LLCrashModel class]];;
     BOOL ret2 = [self registerClass:[LLNetworkModel class]];;
     BOOL ret3 = [self registerClass:[LLLogModel class]];;
+    BOOL ret4 = [self registerClass:[LLNetworkMockModel class]];;
 
-    return ret1 && ret2 && ret3;
+    return ret1 && ret2 && ret3 && ret4;
 }
 
 /**

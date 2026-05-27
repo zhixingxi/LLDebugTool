@@ -23,6 +23,9 @@
 
 #import "LLNetworkDetailViewController.h"
 
+#import "LLNetworkMockEditViewController.h"
+#import "LLNetworkMockManager.h"
+#import "LLNetworkMockModel.h"
 #import "LLSubTitleTableViewCell.h"
 #import "LLNetworkImageCell.h"
 #import "LLNetworkModel.h"
@@ -41,6 +44,7 @@ static NSString *const kNetworkImageCellID = @"NetworkImageCellID";
 @property (nonatomic, strong) NSMutableArray *contentArray;
 
 @property (nonatomic, strong) NSArray *canCopyArray;
+@property (nonatomic, strong) LLNetworkMockModel *mockModel;
 
 @end
 
@@ -53,6 +57,7 @@ static NSString *const kNetworkImageCellID = @"NetworkImageCellID";
     [self.tableView registerClass:[LLNetworkImageCell class] forCellReuseIdentifier:kNetworkImageCellID];
     [self.tableView registerClass:[LLSubTitleTableViewCell class] forCellReuseIdentifier:kNetworkContentCellID];
     [self loadData];
+    [self loadMockModel];
 }
 
 #pragma mark - UITableViewDelegate, UITableViewDataSource
@@ -86,6 +91,14 @@ static NSString *const kNetworkImageCellID = @"NetworkImageCellID";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *title = self.titleArray[indexPath.row];
+    if ([title isEqualToString:@"Mock Enabled"]) {
+        [self switchMockEnabled];
+        return;
+    }
+    if ([title isEqualToString:@"Edit Mock Body"]) {
+        [self editMockBody];
+        return;
+    }
     if ([self.canCopyArray containsObject:title]) {
         id obj = self.contentArray[indexPath.row];
         if ([obj isKindOfClass:[NSData class]] && self.model.isImage) {
@@ -120,6 +133,7 @@ static NSString *const kNetworkImageCellID = @"NetworkImageCellID";
     if (self.model) {
         self.titleArray = [[NSMutableArray alloc] init];
         self.contentArray = [[NSMutableArray alloc] init];
+        [self reloadMockRows];
         [self.titleArray addObject:@"Request Url"];
         [self.contentArray addObject:self.model.url.absoluteString?:@"unknown"];
         if (self.model.method) {
@@ -171,9 +185,54 @@ static NSString *const kNetworkImageCellID = @"NetworkImageCellID";
     }
 }
 
+- (void)loadMockModel {
+    __weak typeof(self) weakSelf = self;
+    [[LLNetworkMockManager shared] mockModelForNetworkModel:self.model complete:^(LLNetworkMockModel * _Nullable model) {
+        weakSelf.mockModel = model ?: [LLNetworkMockModel mockModelWithNetworkModel:weakSelf.model];
+        [weakSelf loadData];
+        [weakSelf.tableView reloadData];
+    }];
+}
+
+- (void)reloadMockRows {
+    [self.titleArray addObject:@"Mock Enabled"];
+    [self.contentArray addObject:self.mockModel.isEnabled ? @"ON" : @"OFF"];
+    [self.titleArray addObject:@"Edit Mock Body"];
+    NSString *detail = self.mockModel.isCustomized ? @"Customized" : @"Use Latest Response";
+    [self.contentArray addObject:detail];
+}
+
+- (void)switchMockEnabled {
+    BOOL enabled = !self.mockModel.isEnabled;
+    __weak typeof(self) weakSelf = self;
+    [[LLToastUtils shared] loadingMessage:@"Saving"];
+    [[LLNetworkMockManager shared] updateMockEnabled:enabled networkModel:self.model complete:^(BOOL result) {
+        [[LLToastUtils shared] hide];
+        if (result) {
+            weakSelf.mockModel.enabled = enabled;
+            [weakSelf loadData];
+            [weakSelf.tableView reloadData];
+        } else {
+            [[LLToastUtils shared] toastMessage:@"Update mock switch fail"];
+        }
+    }];
+}
+
+- (void)editMockBody {
+    LLNetworkMockEditViewController *vc = [[LLNetworkMockEditViewController alloc] init];
+    vc.mockModel = self.mockModel ?: [LLNetworkMockModel mockModelWithNetworkModel:self.model];
+    __weak typeof(self) weakSelf = self;
+    vc.saveBlock = ^(LLNetworkMockModel *model) {
+        weakSelf.mockModel = model;
+        [weakSelf loadData];
+        [weakSelf.tableView reloadData];
+    };
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
 - (NSArray *)canCopyArray {
     if (!_canCopyArray) {
-        _canCopyArray = @[@"Request Url", @"Error", @"Header Fields" ,@"Request Body",@"Response Body"];
+        _canCopyArray = @[@"Request Url", @"Error", @"Header Fields" ,@"Request Body",@"Response Body", @"Mock Enabled"];
     }
     return _canCopyArray;
 }
