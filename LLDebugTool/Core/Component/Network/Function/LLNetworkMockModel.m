@@ -71,10 +71,72 @@
     return string ?: @"";
 }
 
+- (NSString *)editableBodyString {
+    if (self.bodyData.length == 0) {
+        return @"";
+    }
+
+    id json = [NSJSONSerialization JSONObjectWithData:self.bodyData options:0 error:NULL];
+    if (json && [NSJSONSerialization isValidJSONObject:json]) {
+        NSData *data = [NSJSONSerialization dataWithJSONObject:json options:NSJSONWritingPrettyPrinted error:NULL];
+        NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        return [self stringByDecodingUnicodeEscapes:string] ?: @"";
+    }
+
+    return [self stringByDecodingUnicodeEscapes:[self bodyString]];
+}
+
 - (void)updateBodyString:(NSString *)bodyString {
     self.bodyData = [bodyString ?: @"" dataUsingEncoding:NSUTF8StringEncoding];
     self.customized = YES;
     self.updatedAt = [LLFormatterTool stringFromDate:[NSDate date] style:FormatterToolDateStyle1];
+}
+
+- (NSString *)stringByDecodingUnicodeEscapes:(NSString *)string {
+    if (string.length == 0 || [string rangeOfString:@"\\u"].location == NSNotFound) {
+        return string;
+    }
+
+    NSMutableString *result = [NSMutableString stringWithCapacity:string.length];
+    NSUInteger index = 0;
+    while (index < string.length) {
+        unichar character = [string characterAtIndex:index];
+        if (character == '\\' && index + 5 < string.length && [string characterAtIndex:index + 1] == 'u') {
+            NSInteger value = 0;
+            BOOL validUnicodeEscape = YES;
+            for (NSUInteger offset = 2; offset <= 5; offset++) {
+                NSInteger hexValue = [self hexValueOfCharacter:[string characterAtIndex:index + offset]];
+                if (hexValue < 0) {
+                    validUnicodeEscape = NO;
+                    break;
+                }
+                value = value * 16 + hexValue;
+            }
+
+            if (validUnicodeEscape) {
+                [result appendFormat:@"%C", (unichar)value];
+                index += 6;
+                continue;
+            }
+        }
+
+        [result appendFormat:@"%C", character];
+        index++;
+    }
+    return result;
+}
+
+- (NSInteger)hexValueOfCharacter:(unichar)character {
+    if (character >= '0' && character <= '9') {
+        return character - '0';
+    }
+    if (character >= 'a' && character <= 'f') {
+        return character - 'a' + 10;
+    }
+    if (character >= 'A' && character <= 'F') {
+        return character - 'A' + 10;
+    }
+    return -1;
 }
 
 - (NSString *)description {

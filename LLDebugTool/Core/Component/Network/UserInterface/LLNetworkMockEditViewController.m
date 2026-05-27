@@ -44,7 +44,7 @@
     self.navigationItem.title = @"Mock Body";
     [self initNavigationItemWithTitle:@"Save" imageName:nil isLeft:NO];
     [self.view addSubview:self.textView];
-    self.textView.text = [self.mockModel bodyString];
+    self.textView.text = [self.mockModel editableBodyString];
 }
 
 - (void)viewDidLayoutSubviews {

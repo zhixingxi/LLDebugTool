@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSInteger)statusCodeValue;
 - (NSString *)bodyString;
+- (NSString *)editableBodyString;
 - (void)updateBodyString:(NSString *)bodyString;
 
 @end
